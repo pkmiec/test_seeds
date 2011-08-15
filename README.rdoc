@@ -32,7 +32,23 @@ Sometimes creating the scenario in the setup callback, create_scenario is called
 
 Test Seeds piggy backs on the transaction fixtures functionality. Transactional fixtures load fixtures into the database when the first test case for a test file is invoked and then execute each test case within a context of a db transaction. This allows test cases to use fixtures and to clean-up after themselves.
 
-Test Seeds load fixtures into the database in the same way but then start a db transaction for the duration of the test file. Test Seeds then load the test seeds and then execute each test case within a context of a db savepoint (or nested db transactions). This allows test seeds to be inserted into the database once and then re-used for each test case that needs it.
+Test Seeds load fixtures into the database in the same way but then start a db transaction for the duration of the test file. Test Seeds then load the test seeds and then execute each test case within a context of a db savepoint (or nested db transactions). This allows test seeds to be inserted into the database once and then re-used for each test case that needs it. Here is the pseudo code,
+
+    test file do
+      load fixtures
+      transaction do
+        load seeds
+        savepoint do 
+          test case 1
+        end
+        savepoint do 
+          test case 2
+        end
+        savepoint do 
+          test case 3
+        end
+      end
+    end
 
 == How To Use
 
