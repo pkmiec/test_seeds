@@ -4,7 +4,7 @@ require 'active_record/fixtures'
 
 module TestSeeds
       
-  class SeedFixture < ::Fixture
+  class SeedFixture < ActiveRecord.const_defined?(:Fixture) ? ActiveRecord::Fixture : Fixture
 
     # Override find to call find with exclusive scope. Shouldn't fixtures do that already?
     def find

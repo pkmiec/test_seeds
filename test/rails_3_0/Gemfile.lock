@@ -27,7 +27,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  activerecord (~> 3.0.0)
+  activerecord (= 3.0.9)
   jeweler (~> 1.6.4)
-  mysql2 (< 0.3)
+  mysql2 (= 0.2.6)
   rake
