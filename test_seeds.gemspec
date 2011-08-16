@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{test_seeds}
-  s.version = "0.0.0"
+  s.version = "0.0.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = [%q{Paul Kmiec}]
-  s.date = %q{2011-08-15}
+  s.date = %q{2011-08-16}
   s.description = %q{Test Seeds piggy backs on the transaction fixtures functionality. Test Seeds load fixtures into the database in the same way but then start a db transaction for the duration of the test file. Any objects for the common scenarios are then created and inserted into the database. Test Seeds then execute each test case within a context of a db savepoint (or nested db transactions). This allows test seeds to be inserted into the database once and then re-used for each test case that needs it.}
   s.email = %q{pkmiec@gmail.com}
   s.extra_rdoc_files = [
@@ -32,7 +32,8 @@ Gem::Specification.new do |s|
     "test/rails_3_1/Gemfile",
     "test/rails_3_1/Gemfile.lock",
     "test/test_test_seeds.rb",
-    "test_all.sh"
+    "test_all.sh",
+    "test_seeds.gemspec"
   ]
   s.homepage = %q{http://github.com/pkmiec/test_seeds}
   s.licenses = [%q{MIT}]
