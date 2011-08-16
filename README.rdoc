@@ -1,6 +1,6 @@
 = test_seeds
 
-Test Seeds allow efficient usage of object factories (like Factory Girl) in tests. Instead of creating objects for similar scenarios for each test case, Test Seeds start a db transaction for each test file, creates all the common objects once, and then uses db savepoints for each test case.
+Test Seeds allow efficient usage of object factories (like Factory Girl) in tests. Instead of creating objects for similar scenarios in each test case, Test Seeds start a db transaction for each test file, create all the common objects once, and then uses db savepoints for each test case allowing for the common objects to be re-used.
 
 == Description
 
@@ -30,9 +30,23 @@ Sometimes creating the scenario in the setup callback, create_scenario is called
 
 == How It Works
 
-Test Seeds piggy backs on the transaction fixtures functionality. Transactional fixtures load fixtures into the database when the first test case for a test file is invoked and then execute each test case within a context of a db transaction. This allows test cases to use fixtures and to clean-up after themselves.
+Transactional fixtures work as follows, 
 
-Test Seeds load fixtures into the database in the same way but then start a db transaction for the duration of the test file. Test Seeds then load the test seeds and then execute each test case within a context of a db savepoint (or nested db transactions). This allows test seeds to be inserted into the database once and then re-used for each test case that needs it. Here is the pseudo code,
+    test file do
+      load fixtures
+      transaction do
+        test case 1
+      end
+      transaction do
+        test case 2
+      end
+      transaction do
+        test case 3
+      end
+    end
+
+
+Test Seeds piggy backs on the transaction fixtures functionality. Test Seeds load fixtures into the database in the same way but then start a db transaction for the duration of the test file. Any objects for the common scenarios are then created and inserted into the database. Test Seeds then execute each test case within a context of a db savepoint (or nested db transactions). This allows test seeds to be inserted into the database once and then re-used for each test case that needs it. Here is the pseudo code,
 
     test file do
       load fixtures
@@ -57,7 +71,7 @@ There are two main ways of using Test Seeds. The first way makes all the seeds a
     class TestSomething < ActiveSupport::TestCase
       include TestSeeds
   
-      seed_set do
+      seeds do
         @object_1 = ...create AR objects...
         @object_2 = ...create AR objects...
         @object_3 = ...create AR objects...
@@ -81,30 +95,30 @@ Alternatively, you can be more selective which seeds go with which test cases,
     class TestSomething < ActiveSupport::TestCase
       include TestSeeds
 
-      seed_set(:scenario_a) do
+      seeds(:scenario_a) do
         @object_a1 = ...create AR objects...
         @object_a2 = ...create AR objects...
         @object_a3 = ...create AR objects...
       end
 
-      seed_set(:scenario_b) do
+      seeds(:scenario_b) do
         @object_b1 = ...create AR objects...
         @object_b2 = ...create AR objects...
         @object_b3 = ...create AR objects...
       end
 
       def test_case_1
-        setup_seed_set(:scenario_a)
+        setup_seeds(:scenario_a)
         # @object_a1, @object_a2, and @object_a3 are available here
       end
 
       def test_case_2
-        setup_seed_set(:scenario_b)
+        setup_seeds(:scenario_b)
         # @object_b1, @object_b2, and @object_b3 are available here
       end
 
       def test_case_3
-        setup_seed_set(:scenario_a, :scenario_b)
+        setup_seeds(:scenario_a, :scenario_b)
         # @object_a1, @object_a2, and @object_a3 are available here
         # @object_b1, @object_b2, and @object_b3 are available here
       end

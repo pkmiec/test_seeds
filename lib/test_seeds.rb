@@ -27,7 +27,7 @@ module TestSeeds
   end
 
   module ClassMethods
-    def seed_set(name = nil, &block)
+    def seeds(name = nil, &block)
       set_callback(:seed, :before) do
         pre_vars = self.instance_variables
         self.instance_eval &block
@@ -37,13 +37,18 @@ module TestSeeds
           seed_accessor = self.set_seed_fixture(seed_var.to_s[1..-1], self.instance_variable_get(seed_var))
           self.instance_variable_set(seed_var, nil) # avoid memory bloat
 
-          seed_sets = self.class.send(:class_variable_get, :@@seed_sets)
-          seed_sets[name] ||= {}
-          seed_sets[name][seed_var] = seed_accessor
+          defined_seeds = self.class.defined_seeds
+          defined_seeds[name] ||= {}
+          defined_seeds[name][seed_var] = seed_accessor
         end
         
       end
     end
+
+    def defined_seeds
+      @defined_seeds ||= {}
+    end
+    
   end
 
   # Re-implement setup_fixtures to use save points instead of transactions.
@@ -57,8 +62,7 @@ module TestSeeds
     @fixture_cache = {}
     @@already_loaded_fixtures ||= {}
 
-    @loaded_seed_sets = []
-    @@seed_sets ||= {}
+    @loaded_seeds = []
 
     if run_in_transaction?
       if @@already_loaded_fixtures[self.class]
@@ -74,7 +78,7 @@ module TestSeeds
       ActiveRecord::Base.connection.transaction_joinable = false
       @created_save_point = true
       
-      setup_seed_set(nil)
+      setup_seeds(nil)
     else
       Fixtures.reset_cache
       @@already_loaded_fixtures[self.class] = nil
@@ -86,7 +90,7 @@ module TestSeeds
 
   # Re-implement setup_fixtures to use save points instead of transactions.
   def teardown_fixtures
-    teardown_seed_set(*@loaded_seed_sets)
+    teardown_seeds(*@loaded_seeds)
     
     return unless defined?(ActiveRecord) && !ActiveRecord::Base.configurations.blank?
 
@@ -129,21 +133,21 @@ module TestSeeds
     @loaded_fixtures
   end
 
-  def setup_seed_set(*seed_sets)
-    seed_sets.each do |seed_set|
-      @@seed_sets[seed_set].each do |seed_var, seed_accessor|
+  def setup_seeds(*seeds)
+    seeds.each do |seed|
+      (self.class.defined_seeds[seed] || []).each do |seed_var, seed_accessor|
         instance_variable_set(seed_var, send(*seed_accessor))
       end
-      @loaded_seed_sets << seed_set
+      @loaded_seeds << seed
     end
   end
 
-  def teardown_seed_set(*seed_sets)
-    seed_sets.each do |seed_set|
-      @@seed_sets[seed_set].each do |seed_var, seed_accessor|
+  def teardown_seeds(*seeds)
+    seeds.each do |seed|
+      (self.class.defined_seeds[seed] || []).each do |seed_var, seed_accessor|
         instance_variable_set(seed_var, nil)
       end
-      @loaded_seed_sets.delete(seed_set)
+      @loaded_seeds.delete(seed)
     end
   end
 
