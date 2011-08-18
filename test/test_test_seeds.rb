@@ -11,6 +11,8 @@ class TestTestSeeds < ActiveSupport::TestCase
   end
 
   seeds(:foo) do
+    assert "skip variables like @_assertion_wrapped"
+    
     @foo_1 = Author.create!(:name => 'foo first')
     @foo_2 = Author.create!(:name => 'foo second')
   end

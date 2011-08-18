@@ -34,7 +34,10 @@ module TestSeeds
         post_vars = self.instance_variables
 
         (post_vars - pre_vars).each do |seed_var|
-          seed_accessor = self.set_seed_fixture(seed_var.to_s[1..-1], self.instance_variable_get(seed_var))
+          seed_name = seed_var.to_s[1..-1]
+          next if seed_name.starts_with?("_")
+          
+          seed_accessor = self.set_seed_fixture(seed_name, self.instance_variable_get(seed_var))
           self.instance_variable_set(seed_var, nil) # avoid memory bloat
 
           defined_seeds = self.class.defined_seeds
