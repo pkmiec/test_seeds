@@ -1,9 +1,8 @@
 require 'helper'
 
 class TestTestSeeds < ActiveSupport::TestCase
-  include TestSeeds
-
   fixtures :authors
+  include TestSeeds
 
   seeds do
     @default_1 = Author.create!(:name => 'default first')
@@ -67,13 +66,29 @@ class TestTestSeeds < ActiveSupport::TestCase
     assert_not_nil authors(:actual_fixture)
     assert_equal "Bob Dole", authors(:actual_fixture).name
   end
+
+end
+
+class TestTestSeeds2 < ActiveSupport::TestCase
+  self.use_transactional_fixtures = false
+  
+  fixtures :authors
+  include TestSeeds
+  
+  def test_is_not_affected_by_previous_tests
+    assert_equal [authors(:actual_fixture)], Author.all.to_a
+  end
   
 end
 
 class TestTestSeedsWithoutSeedSet < ActiveSupport::TestCase
+  
+  fixtures :authors
   include TestSeeds
   
   def test_does_not_blow_up_when_test_seeds_is_not_used
     assert true
   end
 end
+
+

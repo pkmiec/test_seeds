@@ -83,7 +83,7 @@ module TestSeeds
       
       setup_seeds(nil)
     else
-      Fixtures.reset_cache
+      fixtures_class_in_my_rails.reset_cache
       @@already_loaded_fixtures[self.class] = nil
       @loaded_fixtures = load_fixtures
     end
@@ -98,7 +98,7 @@ module TestSeeds
     return unless defined?(ActiveRecord) && !ActiveRecord::Base.configurations.blank?
 
     unless run_in_transaction?
-      Fixtures.reset_cache
+      fixtures_class_in_my_rails.reset_cache
     end
 
     if run_in_transaction? && @created_save_point
@@ -113,7 +113,7 @@ module TestSeeds
   # Load fixture is called once for each test class which is a good place to inject db transactions
   # and to create the seeds.
   def load_fixtures
-    if run_in_transaction? && ActiveRecord::Base.connection.open_transactions != 0
+    if ActiveRecord::Base.connection.open_transactions != 0
       ActiveRecord::Base.connection.decrement_open_transactions
       ActiveRecord::Base.connection.rollback_db_transaction
     end
@@ -168,5 +168,11 @@ module TestSeeds
     ActiveRecord::Base.connection.transaction(:requires_new => true) do
       _run_seed_callbacks
     end
+  end
+  
+  private
+  
+  def fixtures_class_in_my_rails
+    ActiveRecord.const_defined?(:Fixtures) ? ActiveRecord::Fixtures : Fixtures
   end
 end
